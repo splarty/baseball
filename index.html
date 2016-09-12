@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://dimplejs.org/dist/dimple.v2.0.0.js"></script>
+  </head>
+
+<body>
+
+    <div id="chartContainer1"> </div>
+    <div id="chartContainer2"> </div>
+
+  <script type="text/javascript">
+
+      // create svg element for page title, explanatory text, and first graph
+      var svg1 = dimple.newSvg("#chartContainer1", 1300, 400);
+
+      // get data for graph 1 and open function to turn data into visualization
+      d3.csv("./summary.csv", function (data) {
+
+          var myChart = new dimple.chart(svg1, data);
+          
+          // create cushion around chart element
+          myChart.setMargins(100, 200, 415, 50);
+
+          // create text for page title
+          svg1.append("text")
+            .attr("x", 100)
+            .attr("y", 40)
+            .style("font-size", "30px")
+            .style("font-family", "sans-serif")
+            .style("font-weight", "bold")
+            .text("Are heavier hitters better hitters?")
+
+          // create text for page summary
+          svg1.selectAll("summary")
+            .data(["Babe Ruth, one of the greatest hitters of all time, was overweight at the peak of his career. More broadly, baseball players", 
+              "have been getting heavier over time. The graphs below show that heavier doesn't necessarily mean better when it comes to batting.",
+              "Higher body mass index (BMI) levels are associated with higher homerun totals, but are not associated with higher batting averages."])
+            .enter()
+            .append("text")
+            .attr("x", 100)
+            .attr("y", function (d, i) { return 70 + i * 14; })
+            .style("font-size", "14px")
+            .style("font-family", "sans-serif")
+            .text(function (d) { return d; });
+
+          // create text for source information
+          svg1.selectAll("sources")
+            .data(["Sources:",
+              "Original data: Lahman Baseball Database, 2014 version (http://seanlahman.com/files/database/readme2014.txt)",
+              "Summary of Harvard study on baseball player BMI (http://abcnews.go.com/Health/MensHealth/baseball-players-overweight-study-suggests/story?id=10001820)"])
+            .enter()
+            .append("text")
+            .attr("x", 100)
+            .attr("y", function (d, i) { return 115 + i * 8; })
+            .style("font-size", "8px")
+            .style("font-family", "sans-serif")
+            .text(function (d) { return d; });
+
+          // graph 1 title
+          svg1.append("text")
+            .attr("x", 100)
+            .attr("y", 185)
+            .style("font-size", "16px")
+            .style("font-family", "sans-serif")
+            .style("font-weight", "bold")
+            .text("Batting average and homerun performance by Body Mass Index (BMI) level");
+
+          // create x-axis
+          var x = myChart.addCategoryAxis("x", "bmi_bucket");
+          x.title = 'Body Mass Index (BMI) bucket';
+          x.fontSize = "12px";
+          x.showGridlines = false;
+          x.addOrderRule("bmi_bucket", false);
+
+          // create left y-axis
+          var y1 = myChart.addMeasureAxis("y", "median_avg");
+          y1.overrideMax = 0.35;
+          y1.title = 'Median batting average';
+          y1.tickFormat = ',.2f';
+          y1.fontSize = "12px";
+          y1.ticks = 3;
+          y1.showGridlines = false;
+
+          // create right y-axis
+          var y2 = myChart.addMeasureAxis("y", "median_hr");
+          y2.overrideMax = 60;
+          y2.title = 'Median homeruns';
+          y2.fontSize = "12px";
+          y2.ticks = 3;
+          y2.showGridlines = false;
+
+          // add the two series for graph
+          myChart.addSeries("Median Batting Average", dimple.plot.line, [x, y1]);
+          myChart.addSeries("Median Home Run Total", dimple.plot.line, [x, y2]);
+
+          // assign distinct colors to each series
+          myChart.assignColor("Median Batting Average", "red");
+          myChart.assignColor("Median Home Run Total", "cyan");
+
+          // create and position legend
+          var myLegend = myChart.addLegend(915, 300, 200, 100, "Right");
+ 
+          // add explanatory note of trends in graph
+          svg1.selectAll("graph_explanation")
+             .data([
+               "As Body Mass Index (BMI)", 
+               "increases, homerun totals rise",
+               "",
+               "... but no similar increase in",
+               "batting average is observed."])
+             .enter()
+             .append("text")
+               .attr("x", 970)
+               .attr("y", function (d, i) { return 210 + i * 14; })
+               .style("font-family", "sans-serif")
+               .style("font-size", "14px")
+               .style("color", "Black")
+               .text(function (d) { return d; });
+
+          myChart.draw();
+
+      });
+
+      
+      // create svg element for second graph
+      var svg2 = dimple.newSvg("#chartContainer2", 1300, 280);
+
+      // get data for graph 2 and open function to turn data into visualization
+      d3.csv("./baseball_data_augmented.csv", function (data) {
+
+          var myChart = new dimple.chart(svg2, data);
+          
+          // create cushion around chart element
+          myChart.setMargins(100, 60, 350, 50);
+
+          // graph title
+          svg2.append("text")
+          .attr("x", 100)
+          .attr("y", 40)
+          .style("font-size", "16px")
+          .style("font-family", "sans-serif")
+          .style("font-weight", "bold")
+          .text("Explore individual players' batting average and homerun totals by BMI level");
+
+          // create x-axis
+          var x = myChart.addMeasureAxis("x", "bmi"); 
+          x.overrideMin = 20;
+          x.overrideMax = 29;
+          x.title = 'Body Mass Index (BMI)';
+          x.fontSize = "12px";
+          x.showGridlines = false;
+
+          // create y-axis
+          var y = myChart.addMeasureAxis("y", "avg");
+          y.overrideMax = 0.35;
+          y.title = 'Batting average';
+          y.tickFormat = ',.2f';
+          y.fontSize = "12px";
+          y.showGridlines = false
+          y.ticks = 3;
+
+          // create z-azis
+          // this axis will be reflected in radius of bubbles. Use square root of homerun variable (hr_sqrt) 
+          // to encode radius size to prevent exaggeration of difference between large and small homerun totals.
+          var z = myChart.addMeasureAxis("z", "hr_sqrt");
+ 
+          // add series to graph
+          bubbleChartSeries = myChart.addSeries(["name", "homeruns", "hr_bucket"], dimple.plot.bubble);
+
+          // cutomize text that shows up in tooltip
+          bubbleChartSeries.getTooltipText = function (e) {
+                return [
+                  "Name: " + e.aggField[0],
+                  "BMI: " + e.xValue.toFixed(1),
+                  "Homeruns: " + e.aggField[1],
+                  "Batting Avg: " + e.yValue.toFixed(3)
+                  ];
+            };
+
+          // assign distinct colors to distinct homerun buckets
+          myChart.assignColor("Low home run hitter (under 25 HR)", "red", "red", 0.3);
+          myChart.assignColor("Mid home run hitter (25-100 HR)", "blue", "blue", 0.3);
+          myChart.assignColor("Big home run hitter (over 200 HR)", "black", "black", 0.3);
+
+          // create and position legend
+          var myLegend = myChart.addLegend(1060, 145, 100, 100, "Right");
+
+          myChart.draw();
+
+          // orphan the legend so that it will not re-draw when chart re-draws
+          myChart.legends = [];
+
+          // add explanation of bubble size
+          svg2.selectAll("bubble_explanation")
+             .data(["Note: Bubble Size is determined", "by player's homerun total relative", "to other players displayed on graph"])
+             .enter()
+             .append("text")
+               .attr("x", 970)
+               .attr("y", function (d, i) { return 60 + i * 14; })
+               .style("font-family", "sans-serif")
+               .style("font-size", "14px")
+               .style("color", "Black")
+               .text(function (d) { return d; });
+
+          // add legend title
+          svg2.selectAll("legend_title_text")
+             .data(["Click to hide or show", "players by homerun bucket:"])
+             .enter()
+             .append("text")
+               .attr("x", 970)
+               .attr("y", function (d, i) { return 130 + i * 14; })
+               .style("font-family", "sans-serif")
+               .style("font-size", "14px")
+               .style("color", "Black")
+               .style("font-weight", "bold")
+               .text(function (d) { return d; });
+
+          // get unique list of homerun buckets
+          var filterValues = dimple.getUniqueValues(data, "hr_bucket");
+          
+          // select all rectangles from orphaned legend
+          myLegend.shapes.selectAll("rect")
+            
+            // add click event to rectangle
+            .on("click", function (e) {
+              
+              var hide = false;
+              var newFilters = [];
+              
+              // if filters contain selected shape, hide it
+              filterValues.forEach(function (f) {
+                if (f === e.aggField.slice(-1)[0]) {
+                  hide = true;
+                } else {
+                  newFilters.push(f);
+                }
+              });
+              
+              // hide/show shapes
+              if (hide) {
+                d3.select(this).style("opacity", 0.3);
+              } else {
+                newFilters.push(e.aggField.slice(-1)[0]);
+                d3.select(this).style("opacity", 0.3);
+              }
+
+              // update filters
+              filterValues = newFilters;
+              
+              // filter data
+              myChart.data = dimple.filterData(data, "hr_bucket", filterValues);
+              
+              // pass duration parameter for animation
+              myChart.draw(600);
+
+            });
+      });
+
+  </script>
+
+</body>
+</html>
